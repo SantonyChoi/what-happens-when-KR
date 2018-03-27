@@ -25,7 +25,7 @@ Table of Contents
 ----------------------
 
 이번 절에서는 키보드의 물리적인 동작과 운영체제의 인터럽트에 대해 다룹니다. 하지만,
-여기서 설명하지 않는 곳에서도 무수히 많은 동작이 일어나죠. 우선 당신이 "g" 키를
+여기서 설명하지 않는 곳에서도 물론 무수히 많은 동작이 일어납니다. 우선 당신이 "g" 키를
 누르면 해당 이벤트가 브라우저에 전달되고 자동완성 기능이 모두 활성화됩니다. 당신이
 사용하는 브라우저의 알고리즘과 당신이 개인/익명 모드를 사용하는지에 따라 다양한 제안이
 URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결과를 검색 기록이나 즐겨찾기에
@@ -40,10 +40,10 @@ URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결
 전기 회로가 (직접적으로든 정전식으로든) 닫힙니다. 이것이 적은 양의 전류를 키보드에서부터
 각 키 스위치 상태를 확인하는 논리 회로 소자에 흐르도록 하고, 빠르고 간헐적인 스위치 차단으로 인한
 전기적 잡음을 디바운싱하며, 신호를 키코드 정수, 이 경우에는 13으로 변환해줍니다. 키보드 컨트롤러는 곧,
-키코드를 인코딩해 컴퓨터로 전달합니다. 이것이 지금은 대부분 Universal Serial Bus (USB) 혹은
+키코드를 인코딩해 컴퓨터로 전달합니다. 이것이 지금은 대부분 유니버설 시리얼 버스 (USB) 혹은
 블루투스 연결을 통해 이루어지며, 과거에는 PS/2 혹은 ADB 연결에서 통용되던 방법입니다.
 
-USB 키보드의 경우:
+*USB 키보드의 경우:*
 
 - 키보드의 USB 회로 소자는 컴퓨터 USB 호스트 컨트롤러의 핀 1로 제공되는 5V 전원으로 동작합니다.
 
@@ -60,7 +60,7 @@ USB 키보드의 경우:
   때문입니다 (USB 2.0 compliance).
 
 - 이 직렬 신호는 곧 컴퓨터의 호스트 USB 컨트롤러에서 디코딩되고, 컴퓨터의
-  HID (Human Interface Device) 유니버설 키보드 디바이스 드라이버에 의해 번역됩니다.
+  HID (Human Interface Device) 유니버설 키보드 디바이스 드라이버에 의해 변환됩니다.
   키 값은 이제 운영 체제의 하드웨어 추상화 레이어로 전달됩니다.
 
 
@@ -70,54 +70,47 @@ USB 키보드의 경우:
   이것이 전도층의 정전기를 통해 회로를 완성시키고 스크린 위의 해당 지점에 전압 하강을 유도합니다.
   그러면 ``스크린 컨트롤러`` 는 키 입력의 좌표를 알리는 인터럽트를 발생시킵니다.
 
-- 이제 모바일 운영체제는 현재 키 입력 이벤트의 초점을 자신의 GUI 요소 중 하나(지금은 가상
+- 이제 모바일 운영체제는 현재 키 입력 이벤트의 초점을 자신의 GUI 요소 중 하나(여기서는 가상
   키보드 어플리케이션 버튼)에 알립니다.
 
 - 가상 키보드는 이제 소프트웨어 인터럽트를 일으켜 '키 입력' 메시지를 OS에 되돌려줄 수 있습니다.
 
 - 이 인터럽트는 현재 키 입력 이벤트의 초점을 알립니다.
 
-
-Interrupt fires [NOT for USB keyboards]
+인터럽트 발생 [키보드가 USB가 아닌 경우에]
 ---------------------------------------
 
-The keyboard sends signals on its interrupt request line (IRQ), which is mapped
-to an ``interrupt vector`` (integer) by the interrupt controller. The CPU uses
-the ``Interrupt Descriptor Table`` (IDT) to map the interrupt vectors to
-functions (``interrupt handlers``) which are supplied by the kernel. When an
-interrupt arrives, the CPU indexes the IDT with the interrupt vector and runs
-the appropriate handler. Thus, the kernel is entered.
+키보드는 인터럽트 요청 라인 (IRQ) 를 통해 신호를 보내는데, 이 라인은 인터럽트 컨트롤러에 의해
+``인터럽트 벡터`` (정수 값) 에 연결되어 있습니다. CPU는 ``Interrupt Descriptor Table``
+(IDT) 을 활용해 커널에서 제공된 함수들 (``인터럽트 핸들러``) 에 인터럽트 벡터를 연결하구요.
+인터럽트가 도착하면, CPU는 IDT와 인터럽트 벡터를 살펴보고 적절한 핸들러를 실행합니다. 이에 따라서,
+커널에 진입하게 됩니다.
 
-(On Windows) A ``WM_KEYDOWN`` message is sent to the app
+(Windows에서) ``WM_KEYDOWN`` 메시지가 앱으로 전달되어요
 --------------------------------------------------------
 
-The HID transport passes the key down event to the ``KBDHID.sys`` driver which
-converts the HID usage into a scancode. In this case the scan code is
-``VK_RETURN`` (``0x0D``). The ``KBDHID.sys`` driver interfaces with the
-``KBDCLASS.sys`` (keyboard class driver). This driver is responsible for
-handling all keyboard and keypad input in a secure manner. It then calls into
-``Win32K.sys`` (after potentially passing the message through 3rd party
-keyboard filters that are installed). This all happens in kernel mode.
+HID 트랜스포트는 키 눌림 이벤트를 HID가 사용하는 형태의 스캔코드로 변환하는 ``KBDHID.sys``
+드라이버에 전달합니다. 이 경우에 스캔코드는 ``VK_RETURN`` (``0x0D``)가 되죠.
+``KBDHID.sys`` 드라이버는 ``KBDCLASS.sys`` (키보드 클래스 드라이버) 와 접속합니다.
+이 드라이버는 모든 키보드와 키패드 입력의 안전한 처리를 담당합니다. 그리고는 (설치된 서드파티
+키보드 필터로 메시지를 전달한 후에) ``Win32K.sys`` 를 호출합니다. 이 모든 일은
+커널 모드에서 일어나죠.
 
-``Win32K.sys`` figures out what window is the active window through the
-``GetForegroundWindow()`` API. This API provides the window handle of the
-browser's address box. The main Windows "message pump" then calls
-``SendMessage(hWnd, WM_KEYDOWN, VK_RETURN, lParam)``. ``lParam`` is a bitmask
-that indicates further information about the keypress: repeat count (0 in this
-case), the actual scan code (can be OEM dependent, but generally wouldn't be
-for ``VK_RETURN``), whether extended keys (e.g. alt, shift, ctrl) were also
-pressed (they weren't), and some other state.
+``Win32K.sys`` 는 어떤 창이 활성화 돼 있는지를 ``GetForegroundWindow()`` API를 통해
+알아냅니다. 이 API는 브라우저 주소창의 윈도우 핸들을 제공하겠네요. Windows의 "message pump"는
+곧, ``SendMessage(hWnd, WM_KEYDOWN, VK_RETURN, lParam)`` 을 호출합니다.
+``lParam`` 은 키눌림의 더 자세한 정보를 가리키는 비트마스크입니다: 반복 횟수(여기선 0),
+진짜 스캔 코드 (OEM 별로 상이하지만, 보통은 ``VK_RETURN``), 특수키(alt, shift, ctrl 같은)가
+함께 눌렸는지 (여기선 안 눌렸죠), 그리고 몇 가지 다른 상태에 대한 정보가 담겨있어요.
 
-The Windows ``SendMessage`` API is a straightforward function that
-adds the message to a queue for the particular window handle (``hWnd``).
-Later, the main message processing function (called a ``WindowProc``) assigned
-to the ``hWnd`` is called in order to process each message in the queue.
+Windows의 ``SendMessage`` API는 특정한 창 핸들 (``hWnd``) 의 큐에 메시지를 추가하는 간단한
+함수입니다. 그리고나서, ``hWnd`` 에 할당된 (``WindowProc`` 이라 불리는) 주 메시지 처리 함수가
+큐에 있는 메시지들을 처리하기 위해 호출됩니다.
 
-The window (``hWnd``) that is active is actually an edit control and the
-``WindowProc`` in this case has a message handler for ``WM_KEYDOWN`` messages.
-This code looks within the 3rd parameter that was passed to ``SendMessage``
-(``wParam``) and, because it is ``VK_RETURN`` knows the user has hit the ENTER
-key.
+활성화 된 창 (``hWnd``) 은 실제로 편집을 제어하며 여기서의 ``WindowProc`` 은 ``WM_KEYDOWN``
+메시지에 대한 메시지 핸들러를 갖게 됩니다. 이 코드는 ``SendMessage`` 로 전달된 세 번째 파라미터
+(``wParam``) 를 들여다보는데요, 사용자가 엔터키를 쳤다는 걸 알려주는 게 ``VK_RETURN`` 이기
+때문입니다.
 
 (On OS X) A ``KeyDown`` NSEvent is sent to the app
 --------------------------------------------------
