@@ -1,21 +1,18 @@
 ...하면 무슨 일이 생길까
 ====================
 
-This repository is an attempt to answer the age old interview question "What
-happens when you type google.com into your browser's address box and press
-enter?"
+이 저장소는 고전적인 인터뷰 질문인 "당신의 브라우저 주소창에 google.com을 치고 엔터를 누르면 어떤
+일이 생길까요?"에 대해 답해보고자 합니다.
 
-Except instead of the usual story, we're going to try to answer this question
-in as much detail as possible. No skipping out on anything.
+일반적인 얘길 하는 대신에, 우리는 가능한 한 세부적으로 이 질문에 답하고자 노력할 것입니다. 아무것도
+빼먹지 않고 말입니다.
 
-This is a collaborative process, so dig in and try to help out! There's tons of
-details missing, just waiting for you to add them! So send us a pull request,
-please!
+이 저장소는 공동 작업물이 되어야 합니다. 함께 파고들고 도움을 주시면 감사하겠습니다! 분명 수많은 디테일상의 실수들이
+있으니, 여러분이 힘을 보태주시길 기다리겠습니다! Pull request를 보내주세요!
 
-This is all licensed under the terms of the `Creative Commons Zero`_ license.
+이 저작물은 `Creative Commons Zero`_ 라이센스를 따릅니다.
 
-Read this in `简体中文`_ (simplified Chinese). NOTE: this has not been reviewed
-by the alex/what-happens-when maintainers.
+영문 원본은 `이 곳`_ 에서 확인하실 수 있습니다.
 
 Table of Contents
 ====================
@@ -32,7 +29,7 @@ Table of Contents
 누르면 해당 이벤트가 브라우저에 전달되고 자동완성 기능이 모두 활성화됩니다. 당신이
 사용하는 브라우저의 알고리즘과 당신이 개인/익명 모드를 사용하는지에 따라 다양한 제안이
 URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결과를 검색 기록이나 즐겨찾기에
-기반해 정렬합니다. 당신은 "google.com"를 입력할 것이기 때문에 상관없지만, 수많은
+기반해 정렬합니다. 당신은 "google.com"을 입력할 것이기 때문에 상관없지만, 수많은
 코드가 당신이 다 마치기 전에 동작하며, 매 키를 누를 때마다 제안이 선별됩니다. 아마
 당신이 다 치기도 전에 "google.com"을 제안할지도 모르겠네요.
 
@@ -40,7 +37,7 @@ URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결
 ---------------------------
 
 명확히 설명드리기 위해, 키보드의 엔터키가 끝까지 눌러졌다고 해봅시다. 여기서, 엔터키에 할당된
-전기 회로가 (직접적으로든 정전식capacitive으로든) 닫힙니다. 이것이 적은 양의 전류를 키보드에서
+전기 회로가 (직접적으로든 정전식으로든) 닫힙니다. 이것이 적은 양의 전류를 키보드에서부터
 각 키 스위치 상태를 확인하는 논리 회로 소자에 흐르도록 하고, 빠르고 간헐적인 스위치 차단으로 인한
 전기적 잡음을 디바운싱하며, 신호를 키코드 정수, 이 경우에는 13으로 변환해줍니다. 키보드 컨트롤러는 곧,
 키코드를 인코딩해 컴퓨터로 전달합니다. 이것이 지금은 대부분 Universal Serial Bus (USB) 혹은
@@ -53,28 +50,28 @@ USB 키보드의 경우:
 - 생성된 키 코드는 키보드 내부 회로 소자내의 "endpoint"라고 불리는 레지스터에 저장됩니다.
 
 - 호스트 USB 컨트롤러는 "endpoint"를 매 10ms(키보드에 따라 정의된 최소값) 이내의 시간마다
-폴링하며, 이를 통해 저장된 키 코드 값을 얻어냅니다.
+  폴링하며, 이를 통해 저장된 키 코드 값을 얻어냅니다.
 
 - 이 값은 USB SIE (Serial Interface Engine) 으로 넘어가 저수준의 USB 프로토콜에 맞는,
-하나 혹은 그 이상의 USB 패킷으로 변환됩니다.
+  하나 혹은 그 이상의 USB 패킷으로 변환됩니다.
 
 - 패킷들은 D+와 D- 핀 (가운데 있는 둘) 을 이용한 차동 신호를 통해 최대 1.5 Mb/s의
-속도로 전송되는데, HID (Human Interface Device) 디바이스는 늘 "저속 장치"로 분류되기
-때문입니다 (USB 2.0 compliance).
+  속도로 전송되는데, HID (Human Interface Device) 디바이스는 늘 "저속 장치"로 분류되기
+  때문입니다 (USB 2.0 compliance).
 
 - 이 직렬 신호는 곧 컴퓨터의 호스트 USB 컨트롤러에서 디코딩되고, 컴퓨터의
-HID (Human Interface Device) 유니버설 키보드 디바이스 드라이버에 의해 번역됩니다. 
-키 값은 이제 운영 체제의 하드웨어 추상화 레이어로 전달됩니다.
+  HID (Human Interface Device) 유니버설 키보드 디바이스 드라이버에 의해 번역됩니다.
+  키 값은 이제 운영 체제의 하드웨어 추상화 레이어로 전달됩니다.
 
 
 *가상 키보드의 경우 (터치 스크린 장치 등에 있는):*
 
 - 사용자가 현대적인 정전식 터치 스크린에 손가락을 올리면, 작은 양의 전류가 손가락으로 흐릅니다.
-이것이 전도층의 정전기를 통해 회로를 완성시키고 스크린 위의 해당 지점에 전압 하강을 유도합니다.
-그러면 ₩₩스크린 컨트롤러₩₩는 키 입력의 좌표를 알리는 인터럽트를 발생시킵니다.
+  이것이 전도층의 정전기를 통해 회로를 완성시키고 스크린 위의 해당 지점에 전압 하강을 유도합니다.
+  그러면 ``스크린 컨트롤러`` 는 키 입력의 좌표를 알리는 인터럽트를 발생시킵니다.
 
 - 이제 모바일 운영체제는 현재 키 입력 이벤트의 초점을 자신의 GUI 요소 중 하나(지금은 가상
-키보드 어플리케이션 버튼)에 알립니다.
+  키보드 어플리케이션 버튼)에 알립니다.
 
 - 가상 키보드는 이제 소프트웨어 인터럽트를 일으켜 '키 입력' 메시지를 OS에 되돌려줄 수 있습니다.
 
@@ -668,3 +665,4 @@ page rendering and painting.
 .. _`简体中文`: https://github.com/skyline75489/what-happens-when-zh_CN
 .. _`downgrade attack`: http://en.wikipedia.org/wiki/SSL_stripping
 .. _`OSI Model`: https://en.wikipedia.org/wiki/OSI_model
+.. _`이 곳`: https://github.com/alex/what-happens-when
