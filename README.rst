@@ -22,7 +22,7 @@ Table of Contents
    :local:
 
 "g"키를 누르면
-----------------------
+-----------
 
 이번 절에서는 키보드의 물리적인 동작과 운영체제의 인터럽트에 대해 다룹니다. 하지만,
 여기서 설명하지 않는 곳에서도 물론 무수히 많은 동작이 일어납니다. 우선 당신이 "g" 키를
@@ -34,7 +34,7 @@ URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결
 당신이 다 치기도 전에 "google.com"을 제안할지도 모르겠네요.
 
 "엔터"키가 쏙 들어갑니다
----------------------------
+------------------
 
 명확히 설명드리기 위해, 키보드의 엔터키가 끝까지 눌러졌다고 해봅시다. 여기서, 엔터키에 할당된
 전기 회로가 (직접적으로든 정전식으로든) 닫힙니다. 이것이 적은 양의 전류를 키보드에서부터
@@ -78,7 +78,7 @@ URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결
 - 이 인터럽트는 현재 키 입력 이벤트의 초점을 알립니다.
 
 인터럽트 발생 [키보드가 USB가 아닌 경우에]
----------------------------------------
+---------------------------------
 
 키보드는 인터럽트 요청 라인 (IRQ) 를 통해 신호를 보내는데, 이 라인은 인터럽트 컨트롤러에 의해
 ``인터럽트 벡터`` (정수 값) 에 연결되어 있습니다. CPU는 ``Interrupt Descriptor Table``
@@ -87,7 +87,7 @@ URL 창 아래에 드랍박스로 나타나죠. 대부분의 알고리즘은 결
 커널에 진입하게 됩니다.
 
 (Windows에서) ``WM_KEYDOWN`` 메시지가 앱으로 전달되어요
---------------------------------------------------------
+-----------------------------------------------
 
 HID 트랜스포트는 키 눌림 이벤트를 HID가 사용하는 형태의 스캔코드로 변환하는 ``KBDHID.sys``
 드라이버에 전달합니다. 이 경우에 스캔코드는 ``VK_RETURN`` (``0x0D``)가 되죠.
@@ -112,115 +112,103 @@ Windows의 ``SendMessage`` API는 특정한 창 핸들 (``hWnd``) 의 큐에 메
 (``wParam``) 를 들여다보는데요, 사용자가 엔터키를 쳤다는 걸 알려주는 게 ``VK_RETURN`` 이기
 때문입니다.
 
-(On OS X) A ``KeyDown`` NSEvent is sent to the app
---------------------------------------------------
+(OS X에서) ``KeyDown`` NSEvent가 앱으로 전달되어요
+--------------------------------------------
 
-The interrupt signal triggers an interrupt event in the I/O Kit kext keyboard
-driver. The driver translates the signal into a key code which is passed to the
-OS X ``WindowServer`` process. Resultantly, the ``WindowServer`` dispatches an
-event to any appropriate (e.g. active or listening) applications through their
-Mach port where it is placed into an event queue. Events can then be read from
-this queue by threads with sufficient privileges calling the
-``mach_ipc_dispatch`` function. This most commonly occurs through, and is
-handled by, an ``NSApplication`` main event loop, via an ``NSEvent`` of
-``NSEventType`` ``KeyDown``.
+인터럽트 신호는 I/O Kit kext 키보드 드라이버에 인터럽트 이벤트를 발생시킵니다. 이 드라이버는 해당
+신호를 OS X의 ``WindowServer`` 프로세스에 전달되는 키 코드로 변환합니다. 그 결과로서,
+``WindowServer`` 는 어떠한 적절한 곳 (활성화 혹은 리스닝하는 곳과 같은 곳) 에라도 이벤트 큐가
+들어있는 Mach의 포트를 통해 이벤트를 보내게 됩니다. 그리고 나면 이벤트는 이 큐에서,
+``mach_ipc_dispatch`` 함수를 호출할 수 있는 권한을 가진 스레드에 의해 읽힙니다. 일련의 과정은
+``NSApplication`` 메인 이벤트 루프에 의해, ``NSEventType`` 의 ``KeyDown`` 이라는
+``NSEvent`` 를 통해 처리됩니다.
 
-(On GNU/Linux) the Xorg server listens for keycodes
----------------------------------------------------
+(GNU/Linux에서) Xorg 서버가 키코드를 listen해요.
+------------------------------------------
 
-When a graphical ``X server`` is used, ``X`` will use the generic event
-driver ``evdev`` to acquire the keypress. A re-mapping of keycodes to scancodes
-is made with ``X server`` specific keymaps and rules.
-When the scancode mapping of the key pressed is complete, the ``X server``
-sends the character to the ``window manager`` (DWM, metacity, i3, etc), so the
-``window manager`` in turn sends the character to the focused window.
-The graphical API of the window  that receives the character prints the
-appropriate font symbol in the appropriate focused field.
+그래픽이 제공되는 ``X 서버`` 를 사용할 땐, ``X`` 가 일반적인 이벤트 드라이버 ``evdev`` 를
+키 눌림 확인에 활용합니다. 키코드를 스캔코드로 다시 맵핑하는 것은 ``X 서버`` 고유의 키맵과 룰에 따라
+이뤄지고요. 키 눌림의 스캔코드 맵핑이 완료되면, ``X 서버`` 는 해당 문자를 ``윈도우 관리자``
+(DWM, metacity, i3 등등) 에 전달하여, ``윈도우 관리자`` 가 활성화된 창에 문자를 보내게 하죠.
+문자를 전달받은 창에서는 그래픽을 표현하는 API가 적절한 폰트 기호를 적절한 선택 영역에 찍어줍니다.
 
-Parse URL
+URL 파싱하기
 ---------
 
-* The browser now has the following information contained in the URL (Uniform
-  Resource Locator):
+* 이제 브라우저는 URL (유일 자원 지시자) 을 담고 있는 아래의 정보를 가지고 있어요:
 
-    - ``Protocol``  "http"
-        Use 'Hyper Text Transfer Protocol'
+    - ``프로토콜``  "http"
+        '하이퍼 텍스트 전송 규약'을 사용하시오
 
-    - ``Resource``  "/"
-        Retrieve main (index) page
+    - ``자원``  "/"
+        메인 (인덱스) 페이지를 가져오시오
 
 
-Is it a URL or a search term?
------------------------------
-
-When no protocol or valid domain name is given the browser proceeds to feed
-the text given in the address box to the browser's default web search engine.
-In many cases the URL has a special piece of text appended to it to tell the
-search engine that it came from a particular browser's URL bar.
-
-Convert non-ASCII Unicode characters in hostname
-------------------------------------------------
-
-* The browser checks the hostname for characters that are not in ``a-z``,
-  ``A-Z``, ``0-9``, ``-``, or ``.``.
-* Since the hostname is ``google.com`` there won't be any, but if there were
-  the browser would apply `Punycode`_ encoding to the hostname portion of the
-  URL.
-
-Check HSTS list
+검색어일까 URL일까?
 ---------------
-* The browser checks its "preloaded HSTS (HTTP Strict Transport Security)"
-  list. This is a list of websites that have requested to be contacted via
-  HTTPS only.
-* If the website is in the list, the browser sends its request via HTTPS
-  instead of HTTP. Otherwise, the initial request is sent via HTTP.
-  (Note that a website can still use the HSTS policy *without* being in the
-  HSTS list.  The first HTTP request to the website by a user will receive a
-  response requesting that the user only send HTTPS requests.  However, this
-  single HTTP request could potentially leave the user vulnerable to a
-  `downgrade attack`_, which is why the HSTS list is included in modern web
-  browsers.)
 
-DNS lookup
+프로토콜이나 유효한 도메인 이름이 주어지지 않으면, 브라우저는 주소창에 놓인 텍스트를 브라우저의 기본 웹
+검색엔진에 넘겨줍니다. 많은 경우에 이 URL에는 어떤 브라우저로부터 전달되었는지 검색엔진이 알 수 있게
+해주는 특수한 부분 텍스트가 붙습니다.
+
+호스트명에서 ASCII 아닌 유니코드 문자열 변환
+-----------------------------------
+
+* 브라우저는 호스트네임에서 ``a-z``, ``A-Z``, ``0-9``, ``-``, 혹은 ``.`` 아닌 문자들을
+  확인합니다.
+
+* 지금의 호스트명은 ``google.com`` 이기때문에 유니코드가 없지만, 있을 때에는 브라우저가 URL에서
+  호스트명 부분에 `퓨니코드 (Punycode)`_ 인코딩을 하기도 합니다.
+
+HSTS 리스트 점검
+-------------
+
+* 브라우저는 "미리 불러들인 HSTS (HTTP Strict Transport Security)" 리스트를 점검합니다. 이
+  리스트는 HTTPS로만 연결되도록 요청한 웹사이트의 목록이죠.
+
+* 웹사이트가 목록에 있다면, 브라우저는 요청을 HTTP 대신 HTTPS로 보내게 됩니다. 그렇지 않다면, 첫
+  요청은 HTTP로 보내지구요. (웹사이트가 HSTS 목록에 *없더라도* 여전히 HSTS 정책을 사용할 수 있다는
+  점을 알아두세요. 사용자의 첫 HTTP 요청에 대한 응답으로 사용자가 반드시 HTTPS 요청을 보내도록
+  요구한다는 내용을 받게 되는 것이죠. 하지만, 이 단일 HTTP 요청이 잠재적으로 사용자를 `다운그레이드
+  공격 (downgrade attack)`_ 에 취약하도록 할 수도 있고, 이 때문에 HSTS 목록이 현대적인
+  웹 브라우저에 들어있는 것입니다.)
+
+DNS 검색
+-------
+
+* 브라우저는 도메인이 캐시에 들어있는지 확인합니다. (크롬에서 DNS 캐시를 보려면,
+  `chrome://net-internals/#dns <chrome://net-internals/#dns>`_ 으로 가보세요).
+* 만약 못 찾으면, 브라우저는 검색을 하기 위해 (OS에 따라 상이하지만) ``gethostbyname`` 라이브러리
+  함수를 호출합니다.
+* ``gethostbyname`` 은 DNS를 통한 호스트명 확인을 시도하기 전에, 호스트명이 로컬의
+  (`OS에 따라`_ 위치가 다른) hosts 파일에서 참조될 수 있는지 봅니다.
+* ``gethostbyname`` 이 캐시와 ``hosts`` 파일 모두에서 호스트명을 못 찾으면, 곧 네트워크
+  스택에서 정의된 DNS 서버에 요청을 보냅니다. 일반적으로 로컬 라우터나 인터넷 공급자의 캐시 DNS 서버로
+  보내지죠.
+* 만약 DNS 서버가 같은 서브넷에 존재한다면 이 네트워크 라이브러리는 DNS 서버에 대해 ``ARP 프로세스``
+  를 거칩니다.
+* 만약 DNS 서버가 다른 서브넷에 존재한다면, 네트워크 라이브러리는 기본 게이트웨이 IP에 대해
+  ``ARP 프로세스`` 를 거칩니다.
+
+ARP 프로세스
 ----------
 
-* Browser checks if the domain is in its cache. (to see the DNS Cache in
-  Chrome, go to `chrome://net-internals/#dns <chrome://net-internals/#dns>`_).
-* If not found, the browser calls ``gethostbyname`` library function (varies by
-  OS) to do the lookup.
-* ``gethostbyname`` checks if the hostname can be resolved by reference in the
-  local ``hosts`` file (whose location `varies by OS`_) before trying to
-  resolve the hostname through DNS.
-* If ``gethostbyname`` does not have it cached nor can find it in the ``hosts``
-  file then it makes a request to the DNS server configured in the network
-  stack. This is typically the local router or the ISP's caching DNS server.
-* If the DNS server is on the same subnet the network library follows the
-  ``ARP process`` below for the DNS server.
-* If the DNS server is on a different subnet, the network library follows
-  the ``ARP process`` below for the default gateway IP.
+ARP (주소 결정 프로토콜, Address Resolution Protocol) 브로드캐스트를 보내기 위해서는
+네트워크 스택 라이브러리가 검색할 목적지 IP의 주소를 알아야 합니다. 또, ARP 브로드캐스트를 보내는 데
+사용하는 인터페이스의 MAC 주소 역시 알아야 합니다.
 
+가장 먼저, ARP 캐시가 목적지 IP의 ARP 항목을 가지고 있는지 점검합니다. 만약 캐시에 있다면 라이브러리
+함수는 다음의 형태로 결과를 리턴합니다: 목적지 IP = MAC.
 
-ARP process
------------
+항목이 ARP 캐시에 없다면:
 
-In order to send an ARP (Address Resolution Protocol) broadcast the network
-stack library needs the target IP address to look up. It also needs to know the
-MAC address of the interface it will use to send out the ARP broadcast.
+* 라우트 테이블을 검색해서 목적지 IP 주소가 로컬 라우트 테이블의 서브넷에 존재하는지 봅니다. 존재한다면,
+  라이브러리가 그 서브넷에 속하는 인터페이스를 활용합니다. 없다면, 라이브러리는 우리 기본 게이트웨이의
+  서브넷에 속하는 인터페이스를 활용합니다.
 
-The ARP cache is first checked for an ARP entry for our target IP. If it is in
-the cache, the library function returns the result: Target IP = MAC.
+* 선택된 네트워크 인터페이스의 MAC 주소가 검색이 됩니다.
 
-If the entry is not in the ARP cache:
-
-* The route table is looked up, to see if the Target IP address is on any of
-  the subnets on the local route table. If it is, the library uses the
-  interface associated with that subnet. If it is not, the library uses the
-  interface that has the subnet of our default gateway.
-
-* The MAC address of the selected network interface is looked up.
-
-* The network library sends a Layer 2 (data link layer of the `OSI model`_)
-  ARP request:
+* 네트워크 라이브러리는 레이어 2 (`OSI 모델`_에서 데이터 링크 레이어) 를 통해 ARP 요청을 보냅니다:
 
 ``ARP Request``::
 
@@ -229,31 +217,26 @@ If the entry is not in the ARP cache:
     Target MAC: FF:FF:FF:FF:FF:FF (Broadcast)
     Target IP: target.ip.goes.here
 
-Depending on what type of hardware is between the computer and the router:
+컴퓨터와 라우터 사이에 어떤 하드웨어가 있는지에 따라:
 
-Directly connected:
+직접 연결시:
 
-* If the computer is directly connected to the router the router responds
-  with an ``ARP Reply`` (see below)
+* 컴퓨터가 라우터에 직접 연결되어 있으면 라우터는 ``ARP Reply`` 를 회신합니다.(아래를 확인하세요)
 
-Hub:
+허브:
 
-* If the computer is connected to a hub, the hub will broadcast the ARP
-  request out all other ports. If the router is connected on the same "wire",
-  it will respond with an ``ARP Reply`` (see below).
+* 컴퓨터가 허브에 연결되어 있으면, 허브가 ARP 요청을 모든 포트에 브로드캐스트합니다. 라우터가 동일한
+  "Wire"에 연결되어 있으면, 허브가 ``ARP Reply`` 를 회신하게 되지요.(아래를 확인하세요)
 
-Switch:
+스위치:
 
-* If the computer is connected to a switch, the switch will check its local
-  CAM/MAC table to see which port has the MAC address we are looking for. If
-  the switch has no entry for the MAC address it will rebroadcast the ARP
-  request to all other ports.
+* 만약 컴퓨터가 스위치에 연결되어 있다면, 스위치가 자신의 로컬 CAM/MAC 테이블을 확인해 어떤 포트가
+  지금 찾고자하는 MAC 주소를 가지고 있는지 봅니다. 스위치에 해당 MAC 주소가 없다면 ARP 요청을 모든
+  포트에 다시 브로드캐스트 하게 되지요.
 
-* If the switch has an entry in the MAC/CAM table it will send the ARP request
-  to the port that has the MAC address we are looking for.
+* 스위치가 MAC/CAM 테이블에서 해당 주소를 찾으면 ARP 요청을 해당 주소의 포트에 보냅니다.
 
-* If the router is on the same "wire", it will respond with an ``ARP Reply``
-  (see below)
+* 라우터가 동일한 "wire"에 있다면, 스위치가 ``ARP Reply`` 를 회신합니다.(아래를 확인하세요)
 
 ``ARP Reply``::
 
@@ -262,14 +245,14 @@ Switch:
     Target MAC: interface:mac:address:here
     Target IP: interface.ip.goes.here
 
-Now that the network library has the IP address of either our DNS server or
-the default gateway it can resume its DNS process:
 
-* Port 53 is opened to send a UDP request to DNS server (if the response size
-  is too large, TCP will be used instead).
-* If the local/ISP DNS server does not have it, then a recursive search is
-  requested and that flows up the list of DNS servers until the SOA is reached,
-  and if found an answer is returned.
+이제 네트워크 라이브러리는 우리 DNS 서버나 DNS 프로세스를 재개할 수 있는 기본 게이트웨이 중 하나의
+IP 주소를 갖고 있습니다:
+
+* 53번 포트는 DNS 서버에 UDP 요청을 보내기 위해 열려 있습니다 (만약 응답 크기가 너무 크다면,
+  TCP가 대신 사용되구요).
+* 로컬/ISP의 DNS 서버가 해당 정보를 갖고 있지 않다면, 재귀적인 탐색이 수행되고 SOA가 도달해서
+  해답이 되돌아올 때까지 DNS 서버 리스트를 타고 올라갑니다
 
 Opening of a socket
 -------------------
@@ -648,14 +631,14 @@ page rendering and painting.
 
 .. _`Creative Commons Zero`: https://creativecommons.org/publicdomain/zero/1.0/
 .. _`"CSS lexical and syntax grammar"`: http://www.w3.org/TR/CSS2/grammar.html
-.. _`Punycode`: https://en.wikipedia.org/wiki/Punycode
+.. _`퓨니코드 (Punycode)`: https://en.wikipedia.org/wiki/Punycode
 .. _`Ethernet`: http://en.wikipedia.org/wiki/IEEE_802.3
 .. _`WiFi`: https://en.wikipedia.org/wiki/IEEE_802.11
 .. _`Cellular data network`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
 .. _`analog-to-digital converter`: https://en.wikipedia.org/wiki/Analog-to-digital_converter
 .. _`network node`: https://en.wikipedia.org/wiki/Computer_network#Network_nodes
-.. _`varies by OS` : https://en.wikipedia.org/wiki/Hosts_%28file%29#Location_in_the_file_system
+.. _`OS에 따라`: https://en.wikipedia.org/wiki/Hosts_%28file%29#Location_in_the_file_system
 .. _`简体中文`: https://github.com/skyline75489/what-happens-when-zh_CN
-.. _`downgrade attack`: http://en.wikipedia.org/wiki/SSL_stripping
-.. _`OSI Model`: https://en.wikipedia.org/wiki/OSI_model
+.. _`다운그레이드 공격 (downgrade attack)`: http://en.wikipedia.org/wiki/SSL_stripping
+.. _`OSI 모델`: https://en.wikipedia.org/wiki/OSI_model
 .. _`이 곳`: https://github.com/alex/what-happens-when
