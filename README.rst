@@ -280,10 +280,10 @@ HTTPS에서는 443)를 뽑아내어, ``socket`` 이라는 이름의 시스템 �
 대부분의 집이나 소규모 업체의 인터넷 연결에서 패킷은 컴퓨터로부터, 아마도 로컬 네트워크를 통해,
 모뎀 (MOdulator/DEModulator) 으로 보내지고 이를 통해 디지털 신호인 1과 0이, 전화나 케이블, 혹은
 무선 통신 연결 등으로 전달되기 적합한 아날로그 신호로 변환됩니다. 그 연결의 반대편에서는 아날로그 신호를
-디지털 신호로 되돌려주는 또 다른 모뎀이 다음 ``네트워크 노드`` 가 출발지와 도착지를 분석할 수 있도록
+디지털 신호로 되돌려주는 또 다른 모뎀이 다음 `네트워크 노드`_ 가 출발지와 도착지를 분석할 수 있도록
 해줍니다.
 
-대부분의 큰 사업체나 몇몇 신축 단지에서는 데이터를 다음 ``네트워크 노드`` 까지 디지털로 직접 연결해주는
+대부분의 큰 사업체나 몇몇 신축 단지에서는 데이터를 다음 `네트워크 노드`_ 까지 디지털로 직접 연결해주는
 광케이블 및 다이렉트 이더넷 연결이 존재하기도 합니다.
 
 결국, 패킷은 로컬 서브넷을 관리하는 라우터에 도착합니다. 거기서부터, 패킷은 자율 시스템 (AS) 의 보더
@@ -546,31 +546,25 @@ CSS 해석
 * 마지막 레이어 위치가 계산되고 합성 명령이 Direct3D/OpenGL 등을 통해 발행됩니다. GPU 명령 버퍼는
   비동기적 렌더링을 위해 비워지고 프레임은 윈도우 서버로 전송됩니다.
 
-GPU Rendering
--------------
+GPU 렌더링
+---------
 
-* During the rendering process the graphical computing layers can use general
-  purpose ``CPU`` or the graphical processor ``GPU`` as well.
+* 렌더링 과정에서 그래픽 처리 연산 레이어는 범용 ``CPU`` 나 그래픽 프로세서인
+  ``GPU`` 모두 사용 가능합니다.
 
-* When using ``GPU`` for graphical rendering computations the graphical
-  software layers split the task into multiple pieces, so it can take advantage
-  of ``GPU`` massive parallelism for float point calculations required for
-  the rendering process.
+* ``GPU`` 를 그래픽 렌더링 연산에 쓸 때에는 그래픽 담당 소프트웨어 레이어가 해당 업무를 여러 조각으로
+  쪼개어, ``GPU`` 의 막강한 부동 소수점 연산 병렬처리를 통해 렌더링을 수월하게 만들죠.
 
+윈도우 서버
+---------
 
-Window Server
--------------
+렌더링 후처리와 사용자에 의해 유도된 동작
+-------------------------------
 
-Post-rendering and user-induced execution
------------------------------------------
-
-After rendering has completed, the browser executes JavaScript code as a result
-of some timing mechanism (such as a Google Doodle animation) or user
-interaction (typing a query into the search box and receiving suggestions).
-Plugins such as Flash or Java may execute as well, although not at this time on
-the Google homepage. Scripts can cause additional network requests to be
-performed, as well as modify the page or its layout, causing another round of
-page rendering and painting.
+렌더링이 끝나면, 특정한 절차 메커니즘 (Google Doodle 애니메이션 같은) 혹은 사용자의 상호작용
+(요청을 검색창에 치고 제안을 받는 등) 에 따라 브라우저는 JavaScript 코드를 실행합니다. Flash나
+Java가 실행되기도 하는데, 지금 다루는 Google 홈페이지에서는 아닙니다. 스크립트는 추가적인 네트워크
+요청을 만들기도 하고, 페이지 자체나 레이아웃을 바꾸기도, 새로운 페이지를 렌더링하고 그려주기도 합니다.
 
 .. _`Creative Commons Zero`: https://creativecommons.org/publicdomain/zero/1.0/
 .. _`"CSS lexical and syntax grammar"`: http://www.w3.org/TR/CSS2/grammar.html
@@ -579,9 +573,8 @@ page rendering and painting.
 .. _`와이파이`: https://en.wikipedia.org/wiki/IEEE_802.11
 .. _`무선 통신 네트워크`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
 .. _`analog-to-digital converter`: https://en.wikipedia.org/wiki/Analog-to-digital_converter
-.. _`network node`: https://en.wikipedia.org/wiki/Computer_network#Network_nodes
+.. _`네트워크 노드`: https://en.wikipedia.org/wiki/Computer_network#Network_nodes
 .. _`OS에 따라`: https://en.wikipedia.org/wiki/Hosts_%28file%29#Location_in_the_file_system
-.. _`简体中文`: https://github.com/skyline75489/what-happens-when-zh_CN
 .. _`다운그레이드 공격 (downgrade attack)`: http://en.wikipedia.org/wiki/SSL_stripping
 .. _`OSI 모델`: https://en.wikipedia.org/wiki/OSI_model
 .. _`이 곳`: https://github.com/alex/what-happens-when
