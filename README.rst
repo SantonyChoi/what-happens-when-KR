@@ -254,75 +254,69 @@ IP 주소를 갖고 있습니다:
 * 로컬/ISP의 DNS 서버가 해당 정보를 갖고 있지 않다면, 재귀적인 탐색이 수행되고 SOA가 도달해서
   해답이 되돌아올 때까지 DNS 서버 리스트를 타고 올라갑니다
 
-Opening of a socket
--------------------
-Once the browser receives the IP address of the destination server, it takes
-that and the given port number from the URL (the HTTP protocol defaults to port
-80, and HTTPS to port 443), and makes a call to the system library function
-named ``socket`` and requests a TCP socket stream - ``AF_INET/AF_INET6`` and
-``SOCK_STREAM``.
+소켓 열기
+-------
 
-* This request is first passed to the Transport Layer where a TCP segment is
-  crafted. The destination port is added to the header, and a source port is
-  chosen from within the kernel's dynamic port range (ip_local_port_range in
-  Linux).
-* This segment is sent to the Network Layer, which wraps an additional IP
-  header. The IP address of the destination server as well as that of the
-  current machine is inserted to form a packet.
-* The packet next arrives at the Link Layer. A frame header is added that
-  includes the MAC address of the machine's NIC as well as the MAC address of
-  the gateway (local router). As before, if the kernel does not know the MAC
-  address of the gateway, it must broadcast an ARP query to find it.
+브라우저가 목적지 서버의 IP 주소를 받으면, 거기서 호스트명과 포트 번호(HTTP 프로토콜에서 기본값 80,
+HTTPS에서는 443)를 뽑아내어, ``socket`` 이라는 이름의 시스템 라이브러리를 호출하고 TCP 소켓 스트림
+- ``AF_INET/AF_INET6`` 과 ``SOCK_STREAM`` - 을 요청합니다.
 
-At this point the packet is ready to be transmitted through either:
+* 이 요청은 먼저 TCP 세그먼트가 제작되는 Transport 레이어로 전달됩니다. 목적지 포트는 헤더에
+  더해지고, 출발지 포트는 커널의 동적 포트 범위 (리눅스의 ip_local_port_range) 에서 선택됩니다.
 
-* `Ethernet`_
-* `WiFi`_
-* `Cellular data network`_
+* 이 세그먼트는 추가적인 IP 헤더를 덧씌우는 Network 레이어로 보내집니다. 지금의 머신뿐 아니라 목적지
+  서버의 IP 주소도 담아 패킷을 만들죠.
 
-For most home or small business Internet connections the packet will pass from
-your computer, possibly through a local network, and then through a modem
-(MOdulator/DEModulator) which converts digital 1's and 0's into an analog
-signal suitable for transmission over telephone, cable, or wireless telephony
-connections. On the other end of the connection is another modem which converts
-the analog signal back into digital data to be processed by the next `network
-node`_ where the from and to addresses would be analyzed further.
+* 패킷은 곧 Link 레이어에 도착합니다. 머신 NIC의 MAC 주소에 게이트웨이(로컬 라우터)의 MAC 주소까지
+  포함한 프레임 헤더가 더해지죠. 전과 마찬가지로, 커널이 게이트웨이의 MAC 주소를 모르면, ARP 쿼리를
+  브로드캐스트 해서 찾아야합니다.
 
-Most larger businesses and some newer residential connections will have fiber
-or direct Ethernet connections in which case the data remains digital and
-is passed directly to the next `network node`_ for processing.
+이 지점에서 패킷은 다음 중 하나로 전송될 준비를 마칩니다:
 
-Eventually, the packet will reach the router managing the local subnet. From
-there, it will continue to travel to the autonomous system's (AS) border
-routers, other ASes, and finally to the destination server. Each router along
-the way extracts the destination address from the IP header and routes it to
-the appropriate next hop. The time to live (TTL) field in the IP header is
-decremented by one for each router that passes. The packet will be dropped if
-the TTL field reaches zero or if the current router has no space in its queue
-(perhaps due to network congestion).
+* `이더넷`_
+* `와이파이`_
+* `무선 통신 네트워크`_
 
-This send and receive happens multiple times following the TCP connection flow:
+대부분의 집이나 소규모 업체의 인터넷 연결에서 패킷은 컴퓨터로부터, 아마도 로컬 네트워크를 통해,
+모뎀 (MOdulator/DEModulator) 으로 보내지고 이를 통해 디지털 신호인 1과 0이, 전화나 케이블, 혹은
+무선 통신 연결 등으로 전달되기 적합한 아날로그 신호로 변환됩니다. 그 연결의 반대편에서는 아날로그 신호를
+디지털 신호로 되돌려주는 또 다른 모뎀이 다음 ``네트워크 노드`` 가 출발지와 도착지를 분석할 수 있도록
+해줍니다.
 
-* Client chooses an initial sequence number (ISN) and sends the packet to the
-  server with the SYN bit set to indicate it is setting the ISN
-* Server receives SYN and if it's in an agreeable mood:
-   * Server chooses its own initial sequence number
-   * Server sets SYN to indicate it is choosing its ISN
-   * Server copies the (client ISN +1) to its ACK field and adds the ACK flag
-     to indicate it is acknowledging receipt of the first packet
-* Client acknowledges the connection by sending a packet:
-   * Increases its own sequence number
-   * Increases the receiver acknowledgment number
-   * Sets ACK field
-* Data is transferred as follows:
-   * As one side sends N data bytes, it increases its SEQ by that number
-   * When the other side acknowledges receipt of that packet (or a string of
-     packets), it sends an ACK packet with the ACK value equal to the last
-     received sequence from the other
-* To close the connection:
-   * The closer sends a FIN packet
-   * The other sides ACKs the FIN packet and sends its own FIN
-   * The closer acknowledges the other side's FIN with an ACK
+대부분의 큰 사업체나 몇몇 신축 단지에서는 데이터를 다음 ``네트워크 노드`` 까지 디지털로 직접 연결해주는
+광케이블 및 다이렉트 이더넷 연결이 존재하기도 합니다.
+
+결국, 패킷은 로컬 서브넷을 관리하는 라우터에 도착합니다. 거기서부터, 패킷은 자율 시스템 (AS) 의 보더
+라우터까지, 다른 자율 시스템까지, 그리고 결국 목적지 서버까지 여행하게 되죠. 이 때 지나치는 각각의
+라우터는 IP 헤더로부터 목적지 주소를 추출해내서 적절한 다음 단계가지 이어줍니다. IP 헤더 내의
+Time to live (TTL) 영역은 라우터를 하나씩 지날 때마다 감소됩니다. TTL 영역이 0이 되거나 도달한
+라우터의 큐에 (네트워크 혼잡과 같은 이유로) 자리가 없을 때 패킷은 드랍됩니다.
+
+이 송수신 동작은 다음의 TCP 연결 흐름을 따라 여러 차례 일어납니다:
+
+* 클라이언트가 초기 순서 번호 (ISN, Initial Sequence Number) 을 선택하고, ISN을 설정하는
+  중임을 나타내는 SYN 비트가 set된 한 패킷을 서버로 보냅니다.
+
+* 서버가 SYN을 수신하고 수용가능한 상태인지 확인합니다:
+   * 서버가 자신의 initial sequence number를 고릅니다
+   * 서버가 ISN 선택중임을 알리는 SYN 비트를 set합니다
+   * 서버가 (클라이언트 ISN + 1) 을 ACK 영역에 붙이고 첫 번째 패킷을 확인했다고 알리는 ACK
+     플래그를 추가합니다
+
+* 클라이언트가 패킷을 하나 보내 연결을 확인해줍니다:
+   * 자신의 ISN을 하나 올립니다
+   * 수신자 확인 번호를 하나 올립니다
+   * ACK 필드를 set합니다.
+
+* 데이터가 다음과 같이 옮겨집니다:
+   * 한 쪽에서 N개의 데이터 바이트를 보내면서, SEQ를 해당 숫자만큼 증가시킵니다
+   * 반대편이 그 패킷 (혹은 연결된 여러 패킷) 을 받았다고 알리면, 상대로부터 마지막에 받았던 순서와
+     같은 ACK 값을 담아 ACK 패킷을 보냅니다
+
+* 연결을 끊을 때:
+   * 닫는 쪽이 FIN 패킷을 보냅니다
+   * 반대편이 FIN 패킷을 ACK하고 자신의 FIN을 보냅니다
+   * 닫는 쪽이 반대편의 FIN을 ACK와 함께 확인하고 알립니다
 
 TLS handshake
 -------------
@@ -632,9 +626,9 @@ page rendering and painting.
 .. _`Creative Commons Zero`: https://creativecommons.org/publicdomain/zero/1.0/
 .. _`"CSS lexical and syntax grammar"`: http://www.w3.org/TR/CSS2/grammar.html
 .. _`퓨니코드 (Punycode)`: https://en.wikipedia.org/wiki/Punycode
-.. _`Ethernet`: http://en.wikipedia.org/wiki/IEEE_802.3
-.. _`WiFi`: https://en.wikipedia.org/wiki/IEEE_802.11
-.. _`Cellular data network`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
+.. _`이더넷`: http://en.wikipedia.org/wiki/IEEE_802.3
+.. _`와이파이`: https://en.wikipedia.org/wiki/IEEE_802.11
+.. _`무선 통신 네트워크`: https://en.wikipedia.org/wiki/Cellular_data_communication_protocol
 .. _`analog-to-digital converter`: https://en.wikipedia.org/wiki/Analog-to-digital_converter
 .. _`network node`: https://en.wikipedia.org/wiki/Computer_network#Network_nodes
 .. _`OS에 따라`: https://en.wikipedia.org/wiki/Hosts_%28file%29#Location_in_the_file_system
