@@ -398,188 +398,153 @@ HTML이 ``www.google.com`` 이 아닌 도메인의 자원을 참조할 땐, 브�
 단계로 되돌아가 해당 도메인에 대해 여기까지의 과정들을 밟습니다. 요청에 들어있는 ``Host`` 헤더는
 ``google.com`` 대신 적당한 서버 이름으로 설정되겠죠.
 
-HTTP Server Request Handle
---------------------------
-The HTTPD (HTTP Daemon) server is the one handling the requests/responses on
-the server side. The most common HTTPD servers are Apache or nginx for Linux
-and IIS for Windows.
 
-* The HTTPD (HTTP Daemon) receives the request.
-* The server breaks down the request to the following parameters:
-   * HTTP Request Method (either ``GET``, ``HEAD``, ``POST``, ``PUT``,
-     ``DELETE``, ``CONNECT``, ``OPTIONS``, or ``TRACE``). In the case of a URL
-     entered directly into the address bar, this will be ``GET``.
-   * Domain, in this case - google.com.
-   * Requested path/page, in this case - / (as no specific path/page was
-     requested, / is the default path).
-* The server verifies that there is a Virtual Host configured on the server
-  that corresponds with google.com.
-* The server verifies that google.com can accept GET requests.
-* The server verifies that the client is allowed to use this method
-  (by IP, authentication, etc.).
-* If the server has a rewrite module installed (like mod_rewrite for Apache or
-  URL Rewrite for IIS), it tries to match the request against one of the
-  configured rules. If a matching rule is found, the server uses that rule to
-  rewrite the request.
-* The server goes to pull the content that corresponds with the request,
-  in our case it will fall back to the index file, as "/" is the main file
-  (some cases can override this, but this is the most common method).
-* The server parses the file according to the handler. If Google
-  is running on PHP, the server uses PHP to interpret the index file, and
-  streams the output to the client.
+HTTP 서버의 요청 처리
+-----------------
 
-Behind the scenes of the Browser
-----------------------------------
+HTTPD (HTTP 데몬) 서버는 서버측에서 요청/응답을 처리하는 친구입니다. 가장 흔한 HTTPD 서버는
+리눅스용인 Apache나 nginx 그리고 윈도우용인 IIS가 있죠.
 
-Once the server supplies the resources (HTML, CSS, JS, images, etc.)
-to the browser it undergoes the below process:
+* HTTPD (HTTP 데몬) 은 요청을 받습니다.
+* 서버는 요청을 다음의 파라미터들로 쪼개는데:
+   * HTTP 요청 메소드 (``GET``, ``HEAD``, ``POST``, ``PUT``, ``DELETE``,
+     ``CONNECT``, ``OPTIONS``, 혹은 ``TRACE`` 중 하나). 주소창에 URL을 직접 입력한
+     경우에는, ``GET`` 이겠구요.
+   * 도메인, 이 경우에는 - google.com.
+   * 요청된 경로/페이지, 이 경우에는 - / (특정한 경로/페이지가 없었으면, / 가 기본 경로입니다).
+* 서버는 google.com에 해당하는 가상 호스트가 서버에 설정되어 있는지 확인합니다.
+* 서버는 google.com이 GET 요청을 받아들일 수 있는지 봅니다.
+* 서버는 해당 클라이언트에게 이 메소드가 허용되는지 봅니다 (IP, 인증, 기타 등등을 통해서요).
+* 서버에 다시쓰기 모듈이 설치돼있으면 (Apache의 mod_rewrite 혹은 IIS의 URL Rewrite같은).
+  받은 요청을 지정된 규칙 중 하나에 연결시키려 하죠. 연결 규칙이 발견되면, 서버는 그 룰로 요청을
+  다시쓰기 합니다.
+* 서버는 요청에 대응되는 내용을 가져오는데, 우리 케이스에서는 "/"가 메인 파일이기 때문에, 인덱스 파일로
+  가게 됩니다 (이걸 덮어쓸 때도 있지만, 이게 가장 흔한 방식이에요).
+* 서버는 가져온 파일을 핸들러를 통해 분석합니다. 구글이 PHP 위에서 동작한다면, 서버는 인덱스 파일을
+  해석하는 데 PHP 를 쓸 것이고, 결과물을 클라이언트에게 흘려보내겠죠.
 
-* Parsing - HTML, CSS, JS
-* Rendering - Construct DOM Tree → Render Tree → Layout of Render Tree →
-  Painting the render tree
-
-Browser
--------
-
-The browser's functionality is to present the web resource you choose, by
-requesting it from the server and displaying it in the browser window.
-The resource is usually an HTML document, but may also be a PDF,
-image, or some other type of content. The location of the resource is
-specified by the user using a URI (Uniform Resource Identifier).
-
-The way the browser interprets and displays HTML files is specified
-in the HTML and CSS specifications. These specifications are maintained
-by the W3C (World Wide Web Consortium) organization, which is the
-standards organization for the web.
-
-Browser user interfaces have a lot in common with each other. Among the
-common user interface elements are:
-
-* An address bar for inserting a URI
-* Back and forward buttons
-* Bookmarking options
-* Refresh and stop buttons for refreshing or stopping the loading of
-  current documents
-* Home button that takes you to your home page
-
-**Browser High Level Structure**
-
-The components of the browsers are:
-
-* **User interface:** The user interface includes the address bar,
-  back/forward button, bookmarking menu, etc. Every part of the browser
-  display except the window where you see the requested page.
-* **Browser engine:** The browser engine marshals actions between the UI
-  and the rendering engine.
-* **Rendering engine:** The rendering engine is responsible for displaying
-  requested content. For example if the requested content is HTML, the
-  rendering engine parses HTML and CSS, and displays the parsed content on
-  the screen.
-* **Networking:** The networking handles network calls such as HTTP requests,
-  using different implementations for different platforms behind a
-  platform-independent interface.
-* **UI backend:** The UI backend is used for drawing basic widgets like combo
-  boxes and windows. This backend exposes a generic interface that is not
-  platform specific.
-  Underneath it uses operating system user interface methods.
-* **JavaScript engine:** The JavaScript engine is used to parse and
-  execute JavaScript code.
-* **Data storage:** The data storage is a persistence layer. The browser may
-  need to save all sorts of data locally, such as cookies. Browsers also
-  support storage mechanisms such as localStorage, IndexedDB, WebSQL and
-  FileSystem.
-
-HTML parsing
-------------
-
-The rendering engine starts getting the contents of the requested
-document from the networking layer. This will usually be done in 8kB chunks.
-
-The primary job of HTML parser to parse the HTML markup into a parse tree.
-
-The output tree (the "parse tree") is a tree of DOM element and attribute
-nodes. DOM is short for Document Object Model. It is the object presentation
-of the HTML document and the interface of HTML elements to the outside world
-like JavaScript. The root of the tree is the "Document" object. Prior of
-any manipulation via scripting, the DOM has an almost one-to-one relation to
-the markup.
-
-**The parsing algorithm**
-
-HTML cannot be parsed using the regular top-down or bottom-up parsers.
-
-The reasons are:
-
-* The forgiving nature of the language.
-* The fact that browsers have traditional error tolerance to support well
-  known cases of invalid HTML.
-* The parsing process is reentrant. For other languages, the source doesn't
-  change during parsing, but in HTML, dynamic code (such as script elements
-  containing `document.write()` calls) can add extra tokens, so the parsing
-  process actually modifies the input.
-
-Unable to use the regular parsing techniques, the browser utilizes a custom
-parser for parsing HTML. The parsing algorithm is described in
-detail by the HTML5 specification.
-
-The algorithm consists of two stages: tokenization and tree construction.
-
-**Actions when the parsing is finished**
-
-The browser begins fetching external resources linked to the page (CSS, images,
-JavaScript files, etc.).
-
-At this stage the browser marks the document as interactive and starts
-parsing scripts that are in "deferred" mode: those that should be
-executed after the document is parsed. The document state is
-set to "complete" and a "load" event is fired.
-
-Note there is never an "Invalid Syntax" error on an HTML page. Browsers fix
-any invalid content and go on.
-
-CSS interpretation
-------------------
-
-* Parse CSS files, ``<style>`` tag contents, and ``style`` attribute
-  values using `"CSS lexical and syntax grammar"`_
-* Each CSS file is parsed into a ``StyleSheet object``, where each object
-  contains CSS rules with selectors and objects corresponding CSS grammar.
-* A CSS parser can be top-down or bottom-up when a specific parser generator
-  is used.
-
-Page Rendering
+브라우저의 이면에서
 --------------
 
-* Create a 'Frame Tree' or 'Render Tree' by traversing the DOM nodes, and
-  calculating the CSS style values for each node.
-* Calculate the preferred width of each node in the 'Frame Tree' bottom up
-  by summing the preferred width of the child nodes and the node's
-  horizontal margins, borders, and padding.
-* Calculate the actual width of each node top-down by allocating each node's
-  available width to its children.
-* Calculate the height of each node bottom-up by applying text wrapping and
-  summing the child node heights and the node's margins, borders, and padding.
-* Calculate the coordinates of each node using the information calculated
-  above.
-* More complicated steps are taken when elements are ``floated``,
-  positioned ``absolutely`` or ``relatively``, or other complex features
-  are used. See
-  http://dev.w3.org/csswg/css2/ and http://www.w3.org/Style/CSS/current-work
-  for more details.
-* Create layers to describe which parts of the page can be animated as a group
-  without being re-rasterized. Each frame/render object is assigned to a layer.
-* Textures are allocated for each layer of the page.
-* The frame/render objects for each layer are traversed and drawing commands
-  are executed for their respective layer. This may be rasterized by the CPU
-  or drawn on the GPU directly using D2D/SkiaGL.
-* All of the above steps may reuse calculated values from the last time the
-  webpage was rendered, so that incremental changes require less work.
-* The page layers are sent to the compositing process where they are combined
-  with layers for other visible content like the browser chrome, iframes
-  and addon panels.
-* Final layer positions are computed and the composite commands are issued
-  via Direct3D/OpenGL. The GPU command buffer(s) are flushed to the GPU for
-  asynchronous rendering and the frame is sent to the window server.
+서버가 브라우저에 자원 (HTML, CSS, JS, 이미지, 기타 등등) 을 제공하면 브라우저는 아래 프로세스를
+수행합니다:
+
+* 파싱 - HTML, CSS, JS
+* 렌더링: DOM 트리 생성 → 트리 렌더링 → 렌더링 된 트리 배치 → 렌더링 된 트리 색칠
+
+브라우저
+-------
+
+브라우저는 당신이 고른 웹 자원을, 서버에 요청하고 브라우저 창에 보여주는 역할을 합니다. 자원은 보통
+HTML 파일이지만, PDF나 이미지, 혹은 다른 타입일 수도 있습니다. 자원의 위치는 유저가 명시한
+URI (통합 자원 식별자 Uniform Resource Identifier) 로 확인할 수 있구요.
+
+브라우저가 HTML을 해석하고 보여주는 방식은 HTML과 CSS 스펙에 명시돼 있습니다. 이 스펙들은
+W3C (World Wide Web Consortium) 기구가 유지하는데, 이 곳이 바로 웹 표준화 기구입니다.
+
+브라우저의 유저 인터페이스들은 서로 유사한 점이 많습니다. 일반적인 유저 인터페이스 구성요소들은:
+
+* URI를 적는 주소창
+* 뒤로 그리고 앞으로 버튼
+* 즐겨찾기 기능
+* 현재 문서를 새로고치거나 멈추는 새로고침과 멈춤 버튼
+* 당신의 홈페이지로 갈 수 있는 홈 버튼
+
+**브라우저의 High Level Structure**
+
+브라우저의 구성요소는:
+The components of the browsers are:
+
+* **유저 인터페이스:** 유저 인터페이스는 주소창, 뒤로/앞으로 버튼, 즐겨찾기 메뉴 등등을 포함합니다.
+  당신이 요청한 페이지를 보는 창을 제외한 브라우저의 모든 부분이죠.
+* **브라우저 엔진:** 브라우저 엔진은 UI와 렌더링 엔진 사이에 일어나는 일을 통제합니다.
+* **렌더링 엔진:** 렌더링 엔진은 요청된 내용을 보여주는 부분을 책임집니다. 예를 들어 만약 요청된 내용이
+  HTML이면, 렌더링 엔진은 HTML과 CSS를 분석하고, 처리된 내용을 화면에 띄워줍니다.
+* **네트워킹:** 네트워킹은 HTTP와 같은 네트워크 요청을, 플랫폼별로 다른 구현체를 활용해
+  플랫폼-독립적인 인터페이스 뒤에서 처리하죠.
+* **UI 백엔드:** UI 백엔드는 콤보박스나 창 같은 기본적인 위젯을 그리는 데 쓰입니다. 이 백엔드는
+  플랫폼에 구애받지 않는 포괄적인 인터페이스를 노출시킵니다.
+  내부적으로는 운영 체제의 유저 인터페이스 메소드들을 활용하면서요.
+* **JavaScript 엔진:** JavaScript 엔진은 JavaScript 코드를 분석하고 실행하는 데 활용됩니다.
+* **데이터 저장소:** 데이터 저장소는 유지가 되는 계층입니다. 브라우저가 쿠키같은 갖가지 종류의
+  데이터를 저장해둬야 할 수도 있거든요. 브라우저는 또 localStorage와 IndexedDB, WebSQL,
+  파일시스템과 같은 저장 메커니즘을 지원합니다.
+
+HTML 파싱
+--------
+
+렌더링 엔진은 네트워킹 계층에서 요청한 문서의 내용을 받아오기 시작합니다. 보통 8kB 덩어리로 이뤄지죠.
+
+HTML 파서의 주된 역할은 HTML 마크업을 파스 트리로 분석해내는 겁니다.
+
+이렇게 나온 트리 ("파스 트리 parse tree") 는 DOM 요소와 속성 노드의 트리입니다. DOM은
+Document Object Mode의 줄임말이고요. 이 친구는 HTML 문서와 HTML 요소를 JavaScript 같은
+외부 요소와 이어주는 인터페이스의 객체 표현 방식입니다. 이 트리의 루트는 "Document" 객체입니다.
+스크립트를 통한 모든 조작보다 앞서, DOM은 마크업과 거의 일대일인 관계를 갖습니다.
+
+**파싱 알고리즘**
+
+HTML은 일반적인 탑-다운이나 바텀-업 방식의 파서로는 분석할 수 없습니다.
+
+그 이유는:
+
+* 관대한 언어적 특성.
+* 브라우저는 흔히 알려진, 잘못된 HTML들을 지원하기 위해 전통적으로 에러를 용인해왔다는 사실.
+* 파싱 과정은 재진입 가능하다는 것입니다. 다른 언어에서, 소스는 파싱 과정에서 변하지 않지만,
+  HTML에서는, 동적 코드 (예를 들어 document.write() 호출을 담고 있는 스크립트 요소) 가
+  추가적인 토큰을 추가할 수도 있어서, 파싱 과정이 실제로 입력값을 바꿉니다.
+
+일반적인 파싱 기술을 쓸 수 없으니, 브라우저는 임의의 파서를 활용해 HTML을 파싱합니다. 파싱 알고리즘은
+HTML5 스펙에 상세히 서술돼있습니다.
+
+알고리즘은 두 단계를 포함하고 있습니다: 토큰화와 트리 생성이죠.
+
+**파싱이 끝난 후의 동작**
+
+브라우저가 페이지에 링크돼있는 외부 자원 (CSS, 이미지, JavaScript 파일, 기타 등등) 을 가져오기
+시작합니다.
+
+이 단계에서 브라우저는 해당 문서가 상호작용 중이라는 표시를 해두고 "deferred" 모드에 있는 스크립트를
+파싱하기 시작합니다: 반드시 문서를 분석한 후에 실행되어야 하는 것들이죠. 문서의 상태는 "complete"
+으로 설정되고 "load" 이벤트가 촉발됩니다.
+
+HTML 페이지에 "유효하지 않은 문법"이라는 에러는 절대 없다는 것을 알아두세요. 브라우저가 어떠한
+내용이든 고치고 넘어가니까요.
+
+CSS 해석
+-------
+
+* ``<style>`` 태그 내용과, ``style`` 속성값으로 되어있는 CSS 파일들을
+  `"CSS lexical and syntax grammar"`_ 를 활용해 파싱합니다.
+* 각각의 CSS 파일은 ``Stylesheet object`` 로 파싱되는데, 여기서 각 객체는 selector 및
+  CSS 문법에 해당하는 객체들과 함께 CSS 규칙들을 담고 있습니다.
+* CSS 파서는 특정한 파서 생성기가 사용됐을 경우에 탑-다운이나 바텀-업도 가능합니다.
+
+페이지 렌더링
+----------
+
+* DOM 노드를 훑고, 각 노드의 CSS 스타일 값을 계산하면서 '프레임 트리'나 '렌더 트리' 만들어요.
+* 자식 노드들의 너비를 더해 '프레임 트리' 내 각 노드의 선별된 너비를 거꾸로 계산하고 그 노드의
+  수평 여백, 경계, 그리고 패딩도 계산합니다.
+* 각 노드가 사용 가능한 너비를 자식들에게 할당하면서 위에서 아래로 실제 너비를 계산합니다.
+* 문자 래핑을 적용하고 자식 노드의 높이, 그리고 노드의 여백, 경계, 패딩을 더해 각 노드의 높이를 거꾸로
+  계산합니다.
+* 각 노드의 좌표를 위에서 계산된 정보를 통해 뽑아냅니다.
+* 더 복잡한 과정은 요소들이 ``float`` 이거나, ``absolutely`` 혹은 ``relatively`` 으로
+  위치해있을 때처럼 다른 복잡한 특성이 쓰일 때 일어납니다.
+  http://dev.w3.org/csswg/css2/ 와 http://www.w3.org/Style/CSS/current-work
+  에서 더 자세한 정보를 확인하세요.
+* 레이어를 만들어 페이지 내 어떤 부분이 그룹으로 애니메이션화 될 수 있도록 다시-래스터화 되지 않는지
+  서술합니다. 각 프레임/렌더 객체는 레이어에 배정됩니다.
+* 페이지의 각 레이어를 위해 텍스쳐가 할당됩니다.
+* 각 레이어의 프레임/렌더 객체를 가로지르며 해당 레이어의 그리기 명령이 실행됩니다. 이 과정은
+  CPU에 의해 래스터화 하거나 D2D/SkiaGL을 활용해 GPU에 직접 그리기도 합니다.
+* 위의 모든 과정은 최근에 웹 페이지가 렌더링될 때 계산된 값을 재활용 할 수 있어서,
+  이후의 변화에 대해서는 적은 노력이 듭니다.
+* 페이지 레이어는 합성 과정으로 넘어가고 거기에서 크롬 브라우저나 iframe 그리고 애드온과 같은 다른
+  시각 요소들과 합쳐집니다.
+* 마지막 레이어 위치가 계산되고 합성 명령이 Direct3D/OpenGL 등을 통해 발행됩니다. GPU 명령 버퍼는
+  비동기적 렌더링을 위해 비워지고 프레임은 윈도우 서버로 전송됩니다.
 
 GPU Rendering
 -------------
