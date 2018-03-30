@@ -320,99 +320,83 @@ Time to live (TTL) 영역은 라우터를 하나씩 지날 때마다 감소됩�
 
 TLS handshake
 -------------
-* The client computer sends a ``ClientHello`` message to the server with its
-  Transport Layer Security (TLS) version, list of cipher algorithms and
-  compression methods available.
 
-* The server replies with a ``ServerHello`` message to the client with the
-  TLS version, selected cipher, selected compression methods and the server's
-  public certificate signed by a CA (Certificate Authority). The certificate
-  contains a public key that will be used by the client to encrypt the rest of
-  the handshake until a symmetric key can be agreed upon.
+* 클라이언트 컴퓨터가 자신의 Transport Layer Security (TLS) 버전, 암호 알고리즘 목록 그리고
+  사용 가능한 압축 방식을 ``ClientHello`` 메시지에 담아 서버로 보냅니다.
 
-* The client verifies the server digital certificate against its list of
-  trusted CAs. If trust can be established based on the CA, the client
-  generates a string of pseudo-random bytes and encrypts this with the server's
-  public key. These random bytes can be used to determine the symmetric key.
+* 서버는 클라이언트에게 TLS 버전, 선택한 암호 알고리즘, 선택한 압축 방식 그리고
+  CA (Certificate Authority) 가 사인한 서버의 공개 인증서를 ``ServerHello`` 메시지에 담아
+  답장합니다. 이 인증서는 대칭키가 생성되기 전까지 클라이언트가 나머지 handshake 과정을 암호화하는
+  데에 쓸 공개키를 담고 있죠.
 
-* The server decrypts the random bytes using its private key and uses these
-  bytes to generate its own copy of the symmetric master key.
+* 클라이언트는 서버측 디지털 인증서가 유효한지를, 신뢰할 수 있는 CA 목록을 통해 확인합니다. 만약 CA를
+  통해 신뢰성이 확보되면, 클라이언트는 의사 난수 (pseudo-random) 바이트를 생성해 서버의 공개키로
+  암호화하구요. 이 난수 바이트는 대칭키를 정하는 데에 사용됩니다.
 
-* The client sends a ``Finished`` message to the server, encrypting a hash of
-  the transmission up to this point with the symmetric key.
+* 서버는 난수 바이트를 자기 개인키로 복호화해 대칭 마스터키 생성에 활용합니다.
 
-* The server generates its own hash, and then decrypts the client-sent hash
-  to verify that it matches. If it does, it sends its own ``Finished`` message
-  to the client, also encrypted with the symmetric key.
+* 클라이언트는 ``Finished`` 메시지를 서버에 보내면서, 지금까지의 교환 내역을 해시한 값을 대칭키로
+  암호화하여 담습니다.
 
-* From now on the TLS session transmits the application (HTTP) data encrypted
-  with the agreed symmetric key.
+* 서버는 스스로도 해시를 생성해 클라이언트에서 도착한 값과 일치하는지 봅니다. 일치하면, 서버도 마찬가지로
+  대칭키를 통해 암호화한 ``Finished`` 메시지를 클라이언트에 보내죠.
 
-HTTP protocol
--------------
+* 이제부터 TLS 세션이 대칭키로 암호화된 어플리케이션 (HTTP) 데이터를 전송합니다.
 
-If the web browser used was written by Google, instead of sending an HTTP
-request to retrieve the page, it will send a request to try and negotiate with
-the server an "upgrade" from HTTP to the SPDY protocol.
+HTTP 프로토콜
+-----------
 
-If the client is using the HTTP protocol and does not support SPDY, it sends a
-request to the server of the form::
+구글이 만든 웹 브라우저라면, 페이지를 가져오기 위해 HTTP 요청을 보내는 대신, 서버에게 HTTP에서
+SPDY로 "업그레이드"할 것을 협상해봅니다.
+
+만약 클라이언트가 SPDY를 지원하지 않고 HTTP만 쓴다면, 서버에 다음과 같은 요청을 보내죠::
 
     GET / HTTP/1.1
     Host: google.com
     Connection: close
     [other headers]
 
-where ``[other headers]`` refers to a series of colon-separated key-value pairs
-formatted as per the HTTP specification and separated by single new lines.
-(This assumes the web browser being used doesn't have any bugs violating the
-HTTP spec. This also assumes that the web browser is using ``HTTP/1.1``,
-otherwise it may not include the ``Host`` header in the request and the version
-specified in the ``GET`` request will either be ``HTTP/1.0`` or ``HTTP/0.9``.)
+``[other headers]`` 부분은 HTTP 사양에 따라 콜론으로 구분되고 각각 새 줄로 나뉘는 일련의 키-값
+쌍을 나타냅니다. (이 부분은 사용된 브라우저가 HTTP 스펙을 벗어나는 어떠한 버그도 없을 때를 가정해요.
+웹 브라우저가 ``HTTP/1.1`` 을 쓴다는 것도 마찬가지인데, 그렇지 않을 경우엔 ``Host`` 헤더가 요청에
+포함되지 않고 ``GET`` 요청에 명시된 버전이 ``HTTP/1.0`` 혹은 ``HTTP/0.9`` 일 수도 있습니다. )
 
-HTTP/1.1 defines the "close" connection option for the sender to signal that
-the connection will be closed after completion of the response. For example,
+HTTP/1.1은 송신자측에서 응답을 받은 직후에 연결이 끊어질 것이라는 신호를 보내기 위해 "close"라는
+연결 옵션을 정의합니다. 아래의 예처럼 말이죠.
 
     Connection: close
 
-HTTP/1.1 applications that do not support persistent connections MUST include
-the "close" connection option in every message.
+영구 접속을 허용하지 않는 HTTP/1.1 어플리케이션은 반드시 "close" 연결 옵션을 모든 메시지에 포함해야
+합니다.
 
-After sending the request and headers, the web browser sends a single blank
-newline to the server indicating that the content of the request is done.
+요청과 헤더를 보낸 후에, 웹 브라우저는 하나의 빈 줄을 서버에 보내 요청 내용이 모두 보내졌음을
+알립니다.
 
-The server responds with a response code denoting the status of the request and
-responds with a response of the form::
+서버는 요청의 상태를 나타내는 코드와 다음과 같은 형태의 답신으로 응답하죠::
 
     200 OK
     [response headers]
 
-Followed by a single newline, and then sends a payload of the HTML content of
-``www.google.com``. The server may then either close the connection, or if
-headers sent by the client requested it, keep the connection open to be reused
-for further requests.
+빈 줄을 하나 붙인 뒤, ``www.google.com`` 의 HTML 본문을 페이로드에 담아 보냅니다. 서버는 곧
+연결을 끊거나, 클라이언트가 보낸 헤더에 요청이 있었을 시, 추가적인 요청을 위해 재사용될 수 있도록
+연결을 유지해둡니다.
 
-If the HTTP headers sent by the web browser included sufficient information for
-the web server to determine if the version of the file cached by the web
-browser has been unmodified since the last retrieval (ie. if the web browser
-included an ``ETag`` header), it may instead respond with a request of
-the form::
+웹 브라우저에서 보낸 HTTP 헤더에, 마지막으로 보냈던 파일이 브라우저에 캐시되어 있고 그 뒤로 변하지
+않았다는 판단을 내릴 만큼 충분한 정보 (예를 들어, 웹 브라우저가 ``ETag`` 헤더를 포함시켰다든지) 가
+담겨 있었다면, 아래와 같이 응답할 수도 있어요::
 
     304 Not Modified
     [response headers]
 
-and no payload, and the web browser instead retrieves the HTML from its cache.
+페이로드 없이, 대신 브라우저가 자체 캐시에서 HTML 폼을 가져오게 말이죠.
 
-After parsing the HTML, the web browser (and server) repeats this process
-for every resource (image, CSS, favicon.ico, etc) referenced by the HTML page,
-except instead of ``GET / HTTP/1.1`` the request will be
-``GET /$(URL relative to www.google.com) HTTP/1.1``.
+HTML을 파싱한 후에는, 브라우저 (그리고 서버) 가 이 과정을 HTML 페이지에서 참조되는 모든 자원
+(이미지, CSS, favicon.ico, 기타 등등) 에 대해 반복합니다. 요청이 ``GET / HTTP/1.1`` 대신
+``GET /$(URL relative to www.google.com) HTTP/1.1`` 이 된다는 것만 빼고 말입니다.
 
-If the HTML referenced a resource on a different domain than
-``www.google.com``, the web browser goes back to the steps involved in
-resolving the other domain, and follows all steps up to this point for that
-domain. The ``Host`` header in the request will be set to the appropriate
-server name instead of ``google.com``.
+HTML이 ``www.google.com`` 이 아닌 도메인의 자원을 참조할 땐, 브라우저가 다른 도메인을 확정하는
+단계로 되돌아가 해당 도메인에 대해 여기까지의 과정들을 밟습니다. 요청에 들어있는 ``Host`` 헤더는
+``google.com`` 대신 적당한 서버 이름으로 설정되겠죠.
 
 HTTP Server Request Handle
 --------------------------
